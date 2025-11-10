@@ -1,0 +1,307 @@
+{
+  "name": "pharmacy-stock-assistant",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 6
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -32,
+        48
+      ],
+      "id": "a62a5d6d-8ae7-428b-8665-d4add82ae4e2",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "sendTo": "yohannes.tibebuwork@gmail.com",
+        "subject": "=Low Stock Alert:  {{ $json.Item }}",
+        "emailType": "text",
+        "message": "=Greetings, \n\nThe following item is running low in stock:\n\nItem: {{ $json.Item }}\nCurrent Stock: {{ $json.Stock }}\nMinimum Required Stock: {{ $json.MinStock }}\n\nPlease restock this item as soon as possible to avoid shortages.\n\nBest regards,  \nPharmacy Stock Assistant",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        576,
+        -160
+      ],
+      "id": "da21b449-166f-4e99-80bd-8f123a14121f",
+      "name": "Send Low Stock Alert",
+      "webhookId": "a620ad1b-0aee-4160-82d9-732c610f3478",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Krj5mTl9fPiW9Clb",
+          "name": "lead-generation-automation"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "yohannes.tibebuwork@gmail.com",
+        "subject": "=Expired Item Detected: {{ $json.Item }}",
+        "emailType": "text",
+        "message": "=Greetings,\n\nThe following item has expired:\n\nItem: {{ $json.Item }}\nExpiry Date: {{ $json.ExpiryDate }}\n\nPlease remove this item from circulation immediately to ensure patient safety.\n\nRegards,  \nPharmacy Stock Assistant\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        576,
+        48
+      ],
+      "id": "d54755ae-76f6-4328-9fec-9b0ec3ee0b72",
+      "name": "Send Expired Item Alert",
+      "webhookId": "1b21e8df-e159-4ea3-9bdc-dcfa38673127",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Krj5mTl9fPiW9Clb",
+          "name": "lead-generation-automation"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1BZlLd-VBI2VnzQdl4W6TIW3Fo5u6QFZiYAgt8XYEgko",
+          "mode": "list",
+          "cachedResultName": "pharmacy inventory",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1BZlLd-VBI2VnzQdl4W6TIW3Fo5u6QFZiYAgt8XYEgko/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1734750006,
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1BZlLd-VBI2VnzQdl4W6TIW3Fo5u6QFZiYAgt8XYEgko/edit#gid=1734750006"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        176,
+        48
+      ],
+      "id": "91e4bbcc-49b4-402b-8e36-9f362fd52506",
+      "name": "Fetch Inventory Data",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "2iTCEihqFSeEqLy4",
+          "name": "lead-generation-automation"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4787c7cc-bd76-455a-9408-2f2472d36fcd",
+              "leftValue": "={{ $json.Stock }}",
+              "rightValue": "={{ $json.MinStock }}",
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        368,
+        -160
+      ],
+      "id": "7391881e-9d3b-45a6-a5eb-2488846a8dce",
+      "name": "Check Low Stock"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5e4fb905-1d09-45de-91fe-1ba5fdf0ca0d",
+              "leftValue": "={{ $now }}",
+              "rightValue": "={{ $json.ExpiryDate }}",
+              "operator": {
+                "type": "dateTime",
+                "operation": "afterOrEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        368,
+        48
+      ],
+      "id": "c40589b7-dafd-4400-836e-ec0787f87c58",
+      "name": "Check Expired Items"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "0967b79d-0440-459b-8ebd-15496538d295",
+              "leftValue": "={{ $now }}",
+              "rightValue": "={{ $json[\"Expiry Date\"] }}",
+              "operator": {
+                "type": "dateTime",
+                "operation": "after"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        368,
+        256
+      ],
+      "id": "c1292a3c-1f02-4a96-a887-a4417439e029",
+      "name": "Check Upcoming Expiry"
+    },
+    {
+      "parameters": {
+        "sendTo": "yohannes.tibebuwork@gmail.com",
+        "subject": "=Upcoming Expiry Alert: {{ $('Fetch Inventory Data').item.json.Item }}",
+        "emailType": "text",
+        "message": "=Greetings,\n\nPlease note that the following item will expire soon:\n\nItem: {{ $json.Item }}\nExpiry Date: {{ $json.ExpiryDate }}\nDays Remaining: {{ Math.ceil((new Date($json.ExpiryDate) - new Date()) / (1000 * 60 * 60 * 24)) }}\n\n\n\n\nKindly prioritize dispensing or returning this item before the expiry date to prevent losses.\n\nBest regards,  \nPharmacy Stock Assistant\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        576,
+        256
+      ],
+      "id": "ce23b210-7e6a-4075-88c1-86d9c6bfa11f",
+      "name": "Send Upcoming Expiry Alert",
+      "webhookId": "887374d5-2518-4eb3-b951-8300794e0651",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Krj5mTl9fPiW9Clb",
+          "name": "lead-generation-automation"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Fetch Inventory Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Inventory Data": {
+      "main": [
+        [
+          {
+            "node": "Check Low Stock",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Check Expired Items",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Check Upcoming Expiry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Low Stock": {
+      "main": [
+        [
+          {
+            "node": "Send Low Stock Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Expired Items": {
+      "main": [
+        [
+          {
+            "node": "Send Expired Item Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Upcoming Expiry": {
+      "main": [
+        [
+          {
+            "node": "Send Upcoming Expiry Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "36a20261-154f-426e-9479-775fcc70c24d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5ad8c55b798e74260613e5177fd66f410a2c23ed95f8f30ad9bbf3e977506e6a"
+  },
+  "id": "TS1hT9lp1QrsUGtq",
+  "tags": []
+}
